@@ -82,7 +82,7 @@ class PushdownAutomaton(Automaton):
 
     def simulate(self, input):
         """
-        Simulates the behaviour of the automaton for a given input.
+        Simulates the behavior of the automaton for a given input.
         """
         #print and log the information about the start of simulation
         self.writer.writeSimulationIntro()
@@ -190,3 +190,62 @@ class PushdownAutomaton(Automaton):
                 'Starting state: {automaton.q0}\n'
                 'Starting stack: {automaton.z0}\n')\
                 .format(automaton = self)
+                
+
+class EpsilonNFA(Automaton):
+	
+	def init(self, states, symbols, acceptableStates, q0, transitions):
+        super(EpsilonNFA, self).__init__(states, symbols, acceptableStates, q0, transitions)
+		self.simulationLog = ""
+		
+	def simulate(self, input):
+		"""
+			Simulates the behavior of the automaton for a given 
+			character sequence (input).
+		"""
+		
+		currentStates = set(self.q0)
+		nextStates = set()
+		
+		currentStates = epsilonTransition(currentStates)
+		
+		for index, character in input.enumerate():
+			nextStates |= self.makeTransition(currentStates, character)
+			nextStates = self.makeEpsilonTransition(nextStates)
+			currentStates.clear()
+			currentStates |= nextStates
+			nextStates.clear()
+			
+		return self.simulatonLog
+	
+	def makeTransition(self, currentStates, character, isEpsilon = False):
+		nextStates = set()
+		for state in currentStates:
+			currentConfiguration = state + "," + character
+			if currentConfiguration in self.transitions:
+				nextStates |= self.transitions.get(currentConfiguration)
+				
+		nextStates.intersection_update(self.states)
+		
+		if not nextStates and not isEpsilon:
+			nextState.add("#") # hashtag simbolizes end of simulation
+		
+		return nextStates
+		
+	def makeEpsilonTransition(self, currentStates):
+		nextStates = self.makeTransition(currentStates, '$', True)
+		if not nextStates:
+			return nextStates
+		else
+			return nextStates.union(self.makeEpsilonTransition(nextStates))
+			
+	def __str__(self):
+		return ('Automaton definition '
+				'(non-finite automaton with epsilon transitions automaton):\n'
+                'States: {automaton.states}\n'
+                'symboles: {automaton.symbols}\n'
+                'Acceptable states: {automaton.acceptableStates}\n'
+                'Starting state: {automaton.q0}\n')\
+                .format(automaton = self)
+			
+	
