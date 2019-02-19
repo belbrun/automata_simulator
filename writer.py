@@ -15,9 +15,9 @@ class Writer():
             Prints an introduction message for the simulation and
             some general information about the automaton
         """
-        print 'Starting simulation of :'
-        print str(self.automaton)
-        print '-Start of simulation-\n'
+        print('Starting simulation of :')
+        print(str(self.automaton))
+        print('-Start of simulation-\n')
         return
 
     def writeCurrentState(self, currentState, previousState = None, character = None):
@@ -28,23 +28,23 @@ class Writer():
             automaton.
         """
         if not previousState :
-            print 'Simulation begins in the starting state: {state}'\
-            .format(state = currentState)
+            print('Simulation begins in the starting state: {state}'\
+            .format(state = currentState))
         else :
             if character != '$':
                 self.writeTransition(previousState, character, [currentState], False)
             else :
                 self.writeTransition(previousState, character, [currentState], True)
 
-        print 'Current stack:'
+        print('Current stack:')
         if len(self.automaton.stack) == 1:
             self.automaton.simulationLog += currentState + "#" + "$"
-            print 'Empty'
+            print('Empty')
         else:
             self.automaton.simulationLog += currentState + "#" + self.automaton.getStackString()
-            print self.automaton.getStackString()
+            print(self.automaton.getStackString())
         self.automaton.simulationLog += "|"
-        print '-'*15
+        print('-'*15)
         return
 
     def writeTransition(self, previousState, character, currentState, isEpsilon):
@@ -53,20 +53,20 @@ class Writer():
             warrning: currentState argument is supposed to be a data structure
         """
         if not isEpsilon:
-            print 'Character {char} triggered a transition :'\
-            .format(char = character)
+            print('Character {char} triggered a transition :'\
+            .format(char = character))
         else :
-            print 'Epsilon transition occured :'
-        print '{previous} ---> {current}'\
-        .format(previous = previousState, current = ','.join(currentState)
+            print('Epsilon transition occured :')
+        print('{previous} ---> {current}'\
+        .format(previous = previousState, current = ','.join(currentState)))
 
     def writeCurrentStates(self, currentStates):
         """
             Prints given current states joined with a comma
         """
-        print 'Current states of the automaton: {states}'\
-        .format(states = ','.join(currentStates))
-
+        print('Current states of the automaton: {states}'\
+        .format(states = ','.join(currentStates)))
+        return
 
     def writeSimulationEnd(self, currentState, success):
         """
@@ -74,14 +74,14 @@ class Writer():
         """
         if not success:
             self.automaton.simulationLog += "fail|"
-            print 'Automaton failed in digesting character sequence'
+            print('Automaton failed in digesting character sequence')
         if isInAcceptableState(currentState):
             self.automaton.simulationLog += "1"
-            print 'Simulation ended in an acceptable state'
+            print('Simulation ended in an acceptable state')
         else:
             self.automaton.simulationLog += "0"
-            print 'Simulation ended in an unacceptable state'
-        print '-End of simulation-\n'
+            print('Simulation ended in an unacceptable state')
+        print('-End of simulation-\n')
         return
 
     def isInAcceptableState(currentState):
