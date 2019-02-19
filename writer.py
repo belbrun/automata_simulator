@@ -15,7 +15,7 @@ class Writer():
             Prints an introduction message for the simulation and
             some general information about the automaton
         """
-        print 'Starting simulation of a pushdown automaton'
+        print 'Starting simulation of :'
         print str(self.automaton)
         print '-Start of simulation-\n'
         return
@@ -32,12 +32,9 @@ class Writer():
             .format(state = currentState)
         else :
             if character != '$':
-                print 'Character {char} triggered a transition :'\
-                .format(char = character)
+                self.writeTransition(previousState, character, [currentState], False)
             else :
-                print 'Epsilon transition occured :'
-            print '{previous} ---> {current}'\
-            .format(previous = previousState, current = currentState)
+                self.writeTransition(previousState, character, [currentState], True)
 
         print 'Current stack:'
         if len(self.automaton.stack) == 1:
@@ -50,6 +47,27 @@ class Writer():
         print '-'*15
         return
 
+    def writeTransition(self, previousState, character, currentState, isEpsilon):
+        """
+            Wraps data about an automaton transition and prints out the result.
+            warrning: currentState argument is supposed to be a data structure
+        """
+        if not isEpsilon:
+            print 'Character {char} triggered a transition :'\
+            .format(char = character)
+        else :
+            print 'Epsilon transition occured :'
+        print '{previous} ---> {current}'\
+        .format(previous = previousState, current = ','.join(currentState)
+
+    def writeCurrentStates(self, currentStates):
+        """
+            Prints given current states joined with a comma
+        """
+        print 'Current states of the automaton: {states}'\
+        .format(states = ','.join(currentStates))
+
+
     def writeSimulationEnd(self, currentState, success):
         """
             Prints out a message specifying the way that the simulation ended
@@ -57,7 +75,7 @@ class Writer():
         if not success:
             self.automaton.simulationLog += "fail|"
             print 'Automaton failed in digesting character sequence'
-        if currentState is not None and currentState in self.automaton.acceptableStates:
+        if isInAcceptableState(currentState):
             self.automaton.simulationLog += "1"
             print 'Simulation ended in an acceptable state'
         else:
@@ -65,3 +83,19 @@ class Writer():
             print 'Simulation ended in an unacceptable state'
         print '-End of simulation-\n'
         return
+
+    def isInAcceptableState(currentState):
+        """
+            Checks if the automaton in a given current state is in an acceptable
+            state. Method is class specific (depending on which automaton was
+            used to initialize the writer).
+        """
+
+        if isinstance(self.automaton, PushdownAutomaton):
+            return currentState is not None and \
+            currentState in self.automaton.acceptableStates
+
+        if isinstance(self.automaton, EpsilonNFA):
+            return not currentState.isdisjoin(self.automaton.acceptableStates)
+
+        return False

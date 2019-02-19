@@ -190,55 +190,86 @@ class PushdownAutomaton(Automaton):
                 'Starting state: {automaton.q0}\n'
                 'Starting stack: {automaton.z0}\n')\
                 .format(automaton = self)
-                
+
 
 class EpsilonNFA(Automaton):
-	
+
 	def init(self, states, symbols, acceptableStates, q0, transitions):
         super(EpsilonNFA, self).__init__(states, symbols, acceptableStates, q0, transitions)
 		self.simulationLog = ""
-		
+
+    @staticmethod
+    def parseAutomatonDefinition(definition):
+        """
+        Parses the automaton definition (if the definition  is correctly given)
+        and returns a class instance.
+        """
+        if len(definition) < 6:
+            return None
+
+        epsilonNFA = \
+        EpsilonNFA(definition[1], definition[2], definition[3]\
+        , definition[4], definition[5:])
+
+        return epsilonNFA
+
 	def simulate(self, input):
 		"""
-			Simulates the behavior of the automaton for a given 
+			Simulates the behavior of the automaton for a given
 			character sequence (input).
 		"""
-		
+        self.writer.writeSimulationIntro()
 		currentStates = set(self.q0)
-		nextStates = set()
-		
-		currentStates = epsilonTransition(currentStates)
-		
+        self.writer.writeCurrentStates(currentStates)
+	    currentStates = epsilonTransition(currentStates)
+        self.writer.writeCurrentStates(currentStates)
+
 		for index, character in input.enumerate():
-			nextStates |= self.makeTransition(currentStates, character)
+			nextStates = self.makeTransition(currentStates, character)
 			nextStates = self.makeEpsilonTransition(nextStates)
 			currentStates.clear()
 			currentStates |= nextStates
-			nextStates.clear()
-			
-		return self.simulatonLog
-	
+            if '#' in currentStates:
+                self.writer.writeSimulationEnd(currentStates, success = False)
+
+        self.writer.writeSimulationEnd(currentStates, success = True)
+	    return self.simulationLog
+
 	def makeTransition(self, currentStates, character, isEpsilon = False):
-		nextStates = set()
+        """
+            Makes a tranisition given a current state and an input character.
+            Uses different behavior if the transition is an epsilon tranisition.
+            Returns the next states of the automaton (None if the transition can't
+            be made).
+        """
+
+        nextStates = set()
 		for state in currentStates:
 			currentConfiguration = state + "," + character
 			if currentConfiguration in self.transitions:
-				nextStates |= self.transitions.get(currentConfiguration)
-				
+                newStates = self.transitions.get(currentConfiguration)
+				nextStates |= newStates
+                self.writer.writeTransition(state, character, newStates, isEpsilon)
 		nextStates.intersection_update(self.states)
-		
+
 		if not nextStates and not isEpsilon:
 			nextState.add("#") # hashtag simbolizes end of simulation
-		
+
 		return nextStates
-		
+
 	def makeEpsilonTransition(self, currentStates):
+        """
+            Makes a transition with an epsilon transition character recursively
+            until the transition cannot be made anymore.
+            Original call af the function will return all new states gathered
+            in upper described recursive search.
+        """
 		nextStates = self.makeTransition(currentStates, '$', True)
 		if not nextStates:
 			return nextStates
 		else
 			return nextStates.union(self.makeEpsilonTransition(nextStates))
-			
+
 	def __str__(self):
 		return ('Automaton definition '
 				'(non-finite automaton with epsilon transitions automaton):\n'
@@ -247,5 +278,3 @@ class EpsilonNFA(Automaton):
                 'Acceptable states: {automaton.acceptableStates}\n'
                 'Starting state: {automaton.q0}\n')\
                 .format(automaton = self)
-			
-	
