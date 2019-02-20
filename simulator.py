@@ -118,7 +118,7 @@ def main():
         testMax = 24
 
     if args.all :
-        for i in range(1,testMax):
+        for i in range(1,testMax + 1):
             success = runTestCase(i, automatonType)
             testsAttempted += 1
             testsSucceded += 1 if success else 0
@@ -131,7 +131,8 @@ def main():
         testsSucceded += 1 if success else 0
 
     else :
-        print('Test case number is not valid, must be between 1 and 25.')
+        print('Test case number is not valid, must be between 1 and {testMax}.'\
+              .format(testMax = testMax))
         return
 
     print('Tests succeded\n {succeses}/{attempts}'\
