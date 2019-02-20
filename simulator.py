@@ -20,7 +20,7 @@ def readCommand(argv):
     parser.add_argument('--all', action='store_true',
                     help='Optional argument that runs all the test cases')
 
-    parser.add_argument('-pda', action='store_true',
+    parser.add_argument('-dpda', action='store_true',
                         help='Argument for running tests on a pushdown automaton')
 
     parser.add_argument('-enfa', action='store_true',
@@ -47,7 +47,8 @@ def readTestFile(testNum,  automatonType, extension = 'in'):
         Input extension is given by default but the output extension can be
         specified in the method call.
     """
-
+    if automatonType == 'enfa':
+        extension += '.txt'
     path = 'tests\\{automaton}\\test{testNum}\\test.{extension}'\
             .format(testNum = testNum, extension = extension, automaton = automatonType)
     return open(path, "r").read().splitlines()
@@ -68,7 +69,7 @@ def runTestCase(testNum, automatonType):
     for sequence in input[0].split("|"):
         characters.append(sequence.split(","))
 
-    if automatonType == 'pda':
+    if automatonType == 'dpda':
         automaton = PushdownAutomaton.parseAutomatonDefinition(input)
     elif automatonType == 'enfa':
         automaton = EpsilonNFA.parseAutomatonDefinition(input)
@@ -80,9 +81,12 @@ def runTestCase(testNum, automatonType):
         log = automaton.simulate(sequence[1])
         correctLog = correctOutput[sequence[0]]
         if log:
+            if len(log) > len(correctLog):
+                print('Part of the log cut off: ' + log[len(correctLog):])
+                log = log[:len(correctLog)]
             print ('Simulation log:\n{simulated}\n'
-                    'Correct log:\n{correct}')\
-                    .format(simulated = log, correct = correctLog)
+                    'Correct log:\n{correct}'\
+                    .format(simulated = log, correct = correctLog))
             if log == correctLog :
                 print('\nLogs match\nTEST SUCCEDED')
                 print('\n' + 15*'-' + '\n')
@@ -103,18 +107,18 @@ def main():
     automatonType = ""
 
 
-    if not args.pda and not args.enfa:
+    if not args.dpda and not args.enfa:
         print('One type of automaton must be chosen in the arguments (use -help for\
         explanation)')
-    elif args.pda:
-        automatonType = "pda"
+    elif args.dpda:
+        automatonType = "dpda"
         testMax = 25
     elif args.enfa:
         automatonType = "enfa"
-        testMax = 20
+        testMax = 24
 
     if args.all :
-        for i in xrange(1,textMax):
+        for i in range(1,testMax):
             success = runTestCase(i, automatonType)
             testsAttempted += 1
             testsSucceded += 1 if success else 0
@@ -122,7 +126,7 @@ def main():
                 testsFailed.append(i)
 
     elif 1 <= args.test_num <=testMax :
-        success = runTestCase(args.test_num)
+        success = runTestCase(args.test_num, automatonType)
         testsAttempted += 1
         testsSucceded += 1 if success else 0
 

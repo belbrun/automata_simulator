@@ -1,5 +1,4 @@
 
-
 class Writer():
 
     """
@@ -64,8 +63,12 @@ class Writer():
         """
             Prints given current states joined with a comma
         """
+        currentStates = sorted(currentStates)
+        print('-'*15)
         print('Current states of the automaton: {states}'\
         .format(states = ','.join(currentStates)))
+        self.automaton.simulationLog += ','.join(currentStates) + '|'
+        print('-'*15)
         return
 
     def writeSimulationEnd(self, currentState, success):
@@ -75,7 +78,7 @@ class Writer():
         if not success:
             self.automaton.simulationLog += "fail|"
             print('Automaton failed in digesting character sequence')
-        if isInAcceptableState(currentState):
+        if self.isInAcceptableState(currentState):
             self.automaton.simulationLog += "1"
             print('Simulation ended in an acceptable state')
         else:
@@ -84,18 +87,19 @@ class Writer():
         print('-End of simulation-\n')
         return
 
-    def isInAcceptableState(currentState):
+    def isInAcceptableState(self,currentState):
         """
             Checks if the automaton in a given current state is in an acceptable
-            state. Method is class specific (depending on which automaton was
-            used to initialize the writer).
+            state. Method handles both one state sent to it as a string, or
+            multiple states sent to it as a set.
         """
 
-        if isinstance(self.automaton, PushdownAutomaton):
+        if type(currentState) is str:
             return currentState is not None and \
             currentState in self.automaton.acceptableStates
 
-        if isinstance(self.automaton, EpsilonNFA):
-            return not currentState.isdisjoin(self.automaton.acceptableStates)
+        if type(currentState) is set:
+            #check is any of the current states also in the acceptable states
+            return not currentState.isdisjoint(self.automaton.acceptableStates)
 
         return False
